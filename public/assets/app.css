@@ -10,3 +10,4 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}}
 .nav-link{gap:9px;font-size:12px;white-space:nowrap}.tool-card-bottom code,.tool-badge,.page-footer,.section-meta,.table-footer,.file-count,.project-table th{color:#697587}.search-field input::placeholder{color:#727c8e}.project-path{color:#697587}
 @media(max-width:800px){.sidebar{visibility:hidden}.sidebar.is-open{visibility:visible}}
+.clipboard-buffer{position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none}.manual-copy-label{display:block;color:var(--muted);font-size:12px;margin:16px 0 7px}.manual-copy-command{display:block;resize:none;width:100%;padding:12px;border:1px solid #dce0e8;border-radius:7px;background:#f3f5fa;color:#3e4b70;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-bottom:16px}#copy-dialog kbd{font-family:inherit;font-weight:600;color:var(--ink)}

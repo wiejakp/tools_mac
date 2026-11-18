@@ -7,8 +7,8 @@
     <meta name="robots" content="noindex, nofollow">
     <title>{% block title %}Tools for your Mac{% endblock %}</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="/assets/app.css">
-    <script src="/assets/app.js" defer></script>
+    <link rel="stylesheet" href="/assets/app.css?v=2">
+    <script src="/assets/app.js?v=2" type="module"></script>
 </head>
 <body>
 <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -30,6 +30,13 @@
 </svg>
 <a class="skip-link" href="#main">Skip to content</a>
 {% block body %}{% endblock %}
+<dialog id="copy-dialog" aria-labelledby="copy-title">
+    <h2 id="copy-title">Copy this command</h2>
+    <p>Your browser requires manual copying. Press <kbd>⌘C</kbd>, then paste into Terminal.</p>
+    <label class="manual-copy-label" for="manual-copy-command">Terminal command</label>
+    <textarea id="manual-copy-command" class="manual-copy-command" readonly rows="2" spellcheck="false"></textarea>
+    <button class="button secondary" id="copy-close">Done</button>
+</dialog>
 <div class="toast" id="copy-status" role="status" aria-live="polite" hidden></div>
 </body>
 </html>

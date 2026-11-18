@@ -1,4 +1,4 @@
-'use strict';
+import { copyText } from './clipboard.mjs';
 
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -11,13 +11,18 @@ function announce(message) {
     toastTimer = setTimeout(() => { toast.hidden = true; }, 4500);
 }
 $$('[data-copy]').forEach((button) => button.addEventListener('click', async () => {
-    try {
-        await navigator.clipboard.writeText(button.dataset.copy);
+    if (await copyText(button.dataset.copy)) {
         announce('Command copied. Run it in your project’s Terminal.');
-    } catch {
-        announce('Clipboard unavailable. Copy this command: ' + button.dataset.copy);
+    } else {
+        const field = $('#manual-copy-command');
+        field.value = button.dataset.copy;
+        $('#copy-dialog').showModal();
+        field.focus();
+        field.select();
+        field.setSelectionRange(0, field.value.length);
     }
 }));
+$('#copy-close').addEventListener('click', () => $('#copy-dialog').close());
 
 let selectedCategory = 'all';
 function filterTools() {

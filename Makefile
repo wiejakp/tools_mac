@@ -1,4 +1,5 @@
 PYTHON ?= /usr/bin/python3
+NODE ?= node
 PHP := ./tooling/php.sh
 CODEX ?= codex
 AGENT ?= agent
@@ -82,6 +83,8 @@ console:
 
 app-test:
 	$(PHP) tests/run.php
+	$(NODE) --test tests/clipboard.test.mjs
+	$(NODE) --check --input-type=module < public/assets/app.js
 	$(PHP) bin/console lint:container
 	$(PHP) bin/console lint:twig templates
 	$(PHP) "$$(command -v composer)" validate --strict --no-check-publish

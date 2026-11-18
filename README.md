@@ -25,6 +25,15 @@ after the command succeeds. If the site was already secured in Valet, its HTTPS
 configuration is reused. The `/health` endpoint reports the PHP version actually
 serving the request; `.valetrc` alone is not proof of active isolation.
 
+The application permanently redirects the Valet hostname from HTTP to HTTPS,
+preserving the requested path and query. The site must have a valid Valet
+certificate (`valet secure tools_mac`); application redirects cannot repair a
+certificate for another hostname. Localhost previews remain available over HTTP.
+
+Command copying uses the browser clipboard API and falls back to native Copy
+when permission is restricted. If both are blocked, a persistent dialog selects
+the command so you can press ⌘C and paste it into Terminal.
+
 `make serve` provides an optional PHP 8.3 preview at
 [localhost:8080](http://127.0.0.1:8080). Stop it with Ctrl-C. Use
 `TOOLS_PHP_BINARY=/path/to/php` when PHP 8.3 is installed outside Homebrew.
@@ -87,6 +96,8 @@ make verify
 
 `make verify` checks shell/Python syntax, disposable cleanup/mount/storage tests,
 application behavior, service wiring, Twig syntax and Composer configuration.
+Clipboard regression checks use Node's built-in test runner; no npm packages or
+JavaScript build step are needed.
 Fixtures never touch real apps or network shares.
 
 The Git origin is `https://github.com/wiejakp/tools_mac.git`. Private reports,

@@ -6,6 +6,7 @@ namespace App\EventSubscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -19,8 +20,16 @@ final class LocalRequestSubscriber implements EventSubscriberInterface
 
     public function onRequest(RequestEvent $event): void
     {
-        if ($event->isMainRequest() && !in_array($event->getRequest()->server->get('REMOTE_ADDR'), ['127.0.0.1', '::1'], true)) {
+        if (!$event->isMainRequest()) {
+            return;
+        }
+        $request = $event->getRequest();
+        if (!in_array($request->server->get('REMOTE_ADDR'), ['127.0.0.1', '::1'], true)) {
             $event->setResponse(new Response('Open this dashboard on the local Mac.', 403));
+            return;
+        }
+        if (!$request->isSecure() && !in_array($request->getHost(), ['localhost', '127.0.0.1'], true)) {
+            $event->setResponse(new RedirectResponse('https://'.$request->getHost().$request->getRequestUri(), 308));
         }
     }
 
