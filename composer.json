@@ -1,0 +1,28 @@
+{
+    "name": "wiejakp/tools-mac",
+    "description": "Local Mac storage dashboard and personal tools",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": "~8.3.0",
+        "ext-ctype": "*",
+        "ext-iconv": "*",
+        "symfony/console": "7.4.*",
+        "symfony/framework-bundle": "7.4.*",
+        "symfony/twig-bundle": "7.4.*",
+        "symfony/yaml": "7.4.*"
+    },
+    "autoload": {
+        "psr-4": { "App\\": "src/" }
+    },
+    "config": {
+        "allow-plugins": false,
+        "sort-packages": true,
+        "platform": { "php": "8.3.0" }
+    },
+    "scripts": {
+        "post-install-cmd": ["@php bin/console cache:clear --no-warmup"],
+        "post-update-cmd": ["@post-install-cmd"],
+        "test": "@php tests/run.php"
+    }
+}

@@ -1,0 +1,7 @@
+framework:
+    secret: 'local-read-only-dashboard'
+    router:
+        utf8: true
+    handle_all_throwables: true
+    http_method_override: false
+    trusted_hosts: ['^localhost$', '^127\.0\.0\.1$', '^tools_mac\.test$']

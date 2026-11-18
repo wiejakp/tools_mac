@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+{% macro icon(name, class = '') %}<svg class="icon {{ class }}" aria-hidden="true" focusable="false"><use href="#i-{{ name }}"/></svg>{% endmacro %}
+{% import _self as ui %}
+{% block body %}
+<aside class="sidebar" id="sidebar">
+    <a class="brand" href="/" aria-label="Tools home"><span class="brand-mark">{{ ui.icon('spark') }}</span><span>tools<span class="brand-dot">.</span></span></a>
+    <div class="workspace-label">Personal workspace</div>
+    <nav aria-label="Main navigation">
+        <a href="#storage" class="nav-link active">{{ ui.icon('grid') }} Overview</a>
+        <a href="#projects" class="nav-link">{{ ui.icon('folder') }} Site projects <span class="nav-count">{{ report.projects|length }}</span></a>
+        <a href="#tools" class="nav-link">{{ ui.icon('terminal') }} Your tools <span class="nav-count">{{ tools|length }}</span></a>
+    </nav>
+    <div class="sidebar-note">{{ ui.icon('storage') }}<strong>A clearer view of your Mac.</strong><p>Storage insights and everyday tools, all in one place.</p></div>
+    <div class="sidebar-bottom"><span class="machine-avatar">{{ ui.icon('code') }}</span><div><strong>My Mac</strong><span>Local workspace</span></div><span class="online-dot" aria-label="Local application"></span></div>
+</aside>
+<div class="app-shell">
+    <header class="topbar">
+        <div class="breadcrumbs"><button class="icon-button mobile-menu" id="menu-toggle" aria-label="Toggle navigation" aria-expanded="false" aria-controls="sidebar">{{ ui.icon('menu') }}</button><span>Workspace</span>{{ ui.icon('chevron') }}<strong>Overview</strong></div>
+        <span class="local-badge"><span class="online-dot"></span> Runs locally</span>
+    </header>
+    <main id="main">
+        <section id="storage" aria-labelledby="storage-title">
+            <div class="page-heading"><div><h1 id="storage-title">Storage overview</h1><p>A little clarity on what’s taking up space.</p></div><button class="button secondary" id="refresh-open">{{ ui.icon('refresh') }} Refresh report</button></div>
+            <div class="storage-panel">
+                <div class="panel-title"><div class="title-with-icon"><span class="device-icon">{{ ui.icon('storage') }}</span><div><h2>Macintosh storage</h2><p>Your project’s local volume</p></div></div>{% if volume.available %}<span class="status-pill {{ volume.used_percent >= 90 ? 'warning' : 'healthy' }}">{{ volume.used_percent >= 90 ? 'Running low on space' : 'Space available' }}</span>{% endif %}</div>
+                {% if volume.available %}
+                <div class="storage-metrics"><div class="primary-metric"><span>Used &amp; reserved</span><strong>{{ volume.used_bytes|bytes }} <small>/ {{ volume.total_bytes|bytes }}</small></strong></div><div><span>Available space</span><strong>{{ volume.free_bytes|bytes }}</strong></div><div><span>Site projects</span><strong>{{ report.status == 'ready' ? projects_bytes|bytes : '—' }} <small>{{ report.projects|length }} projects</small></strong></div></div>
+                <meter class="volume-meter" min="0" max="100" value="{{ volume.used_percent }}" aria-label="Storage used and reserved">{{ volume.used_percent }}% used</meter>
+                <div class="storage-legend"><span><i class="legend-dot used"></i>{{ volume.used_percent }}% used or reserved</span><span><i class="legend-dot free"></i>{{ (100 - volume.used_percent)|number_format(1) }}% available</span></div>
+                {% else %}<p class="empty-inline">Volume statistics are unavailable. The saved audit may still contain project totals.</p>{% endif %}
+                <div class="insight">{{ ui.icon('spark') }}<p>{% if report.projects|length %}<strong>{{ report.projects[0].name }}</strong> is your largest measured site at <strong>{{ report.projects[0].allocated_bytes|bytes }}</strong>. Expand a project below to see its largest folders.{% else %}Find your largest site projects with a local storage report. Run <code>make audit</code> in your project’s Terminal.{% endif %}</p></div>
+            </div>
+            {% if report.status == 'invalid' %}<div class="notice">{{ ui.icon('info') }}<p>The saved report could not be read. Refresh it in Terminal with <code>make audit-mac</code>.</p></div>{% elseif report.partial or report.stale %}<div class="notice">{{ ui.icon('info') }}<p>{% if report.partial %}Some folders were inaccessible or exceeded the scan budget. Measured totals are partial. {% endif %}{% if report.stale %}This report is more than a day old. Refresh it for current folder sizes.{% endif %}</p></div>{% endif %}
+        </section>
+
+        <section id="projects" class="section" aria-labelledby="projects-title">
+            <div class="section-heading"><div><h2 id="projects-title">Largest site projects <span class="count">{{ report.projects|length }}</span></h2><p>Ranked by allocated file data, including dependencies.</p></div><span class="section-meta">{% if report.generated_at %}Scanned {{ report.generated_at|date('M j, g:i a', 'America/Chicago') }} CT{% else %}No scan yet{% endif %}</span></div>
+            <div class="project-panel">
+                <div class="table-toolbar"><label class="search-field">{{ ui.icon('search') }}<input type="search" id="project-search" placeholder="Find a project…" aria-label="Find a site project"></label><label class="sort-label">Sort by <select id="project-sort"><option value="size">Largest first</option><option value="name">Name</option></select></label></div>
+                {% if report.projects|length %}
+                <div class="table-scroll"><table class="project-table"><thead><tr><th scope="col">Project</th><th scope="col">File count</th><th scope="col">Size on disk</th><th scope="col" class="share-heading">Relative size</th></tr></thead><tbody id="project-rows">
+                    {% set max_size = report.projects[0].allocated_bytes > 0 ? report.projects[0].allocated_bytes : 1 %}
+                    {% for project in report.projects %}<tr data-project="{{ project.name|lower }}" data-size="{{ project.allocated_bytes }}" {% if loop.index > 8 %}hidden{% endif %}>
+                        <td><details class="project-details"><summary><span class="folder-icon">{{ ui.icon('folder') }}</span><span class="project-name">{{ project.name }}{% if project.partial %}<small>Partial measurement</small>{% endif %}</span>{{ ui.icon('chevron', 'expand-icon') }}</summary><div class="project-breakdown"><p class="project-path">{{ project.path }}</p><ul>{% for child in project.children|slice(0, 5) %}<li><span>{{ child.name }}</span><strong>{{ child.allocated_bytes|bytes }}</strong></li>{% else %}<li>No measured file data.</li>{% endfor %}</ul></div></details></td>
+                        <td class="file-count">{{ project.files|number_format }}</td><td class="size-cell">{{ project.allocated_bytes|bytes }}</td><td class="share-cell"><meter min="0" max="{{ max_size }}" value="{{ project.allocated_bytes }}" aria-label="{{ project.name }} relative size">{{ project.allocated_bytes|bytes }}</meter></td>
+                    </tr>{% endfor %}
+                </tbody></table></div>
+                <p class="empty-inline" id="no-projects" hidden>No projects match your search.</p>
+                <div class="table-footer"><span id="project-count">Showing {{ min(8, report.projects|length) }} of {{ report.projects|length }} projects</span>{% if report.projects|length > 8 %}<button class="text-button" id="show-projects">Show all projects {{ ui.icon('chevron') }}</button>{% endif %}</div>
+                {% else %}<div class="empty-state">{{ ui.icon('folder') }}<h3>Your sites, sorted by size.</h3><p>Run a storage report to see which projects use the most room.</p><button class="button secondary" data-copy="make audit">{{ ui.icon('copy') }} Copy scan command</button></div>{% endif %}
+            </div>
+        </section>
+
+        {% if report.scope == 'whole-mac' and report.directories|length %}<section class="section" aria-labelledby="folders-title"><div class="section-heading"><div><h2 id="folders-title">Across your Mac</h2><p>Local data folders. Cloud storage and mounted volumes are excluded.</p></div></div><div class="folder-list">{% for directory in report.directories %}<details class="scope-details"><summary><span class="folder-icon">{{ ui.icon('folder') }}</span><span>{{ directory.path }}{% if directory.partial %}<small>Partial</small>{% endif %}</span><strong>{{ directory.allocated_bytes|bytes }}</strong>{{ ui.icon('chevron', 'expand-icon') }}</summary><ul>{% for child in directory.children|slice(0, 8) %}<li><span>{{ child.name }}</span><strong>{{ child.allocated_bytes|bytes }}</strong></li>{% endfor %}</ul></details>{% endfor %}</div></section>{% endif %}
+
+        <section id="tools" class="section" aria-labelledby="tools-title"><div class="section-heading"><div><h2 id="tools-title">Your everyday tools</h2><p>The right command, without having to remember it.</p></div></div>
+            <div class="tool-toolbar"><div class="filter-tabs" role="group" aria-label="Filter tools">{% for category in ['All tools', 'Storage', 'Cleanup', 'Network', 'Development'] %}<button class="filter-tab {{ loop.first ? 'selected' : '' }}" data-category="{{ loop.first ? 'all' : category }}" aria-pressed="{{ loop.first ? 'true' : 'false' }}">{{ category }}</button>{% endfor %}</div><label class="search-field tool-search">{{ ui.icon('search') }}<input id="tool-search" type="search" placeholder="Search tools" aria-label="Search tools"><kbd>/</kbd></label></div>
+            <div class="tools-grid">{% for tool in tools %}<article class="tool-card" data-tool="{{ tool.name|lower }} {{ tool.description|lower }}" data-tool-category="{{ tool.category }}"><div class="tool-card-top"><span class="tool-icon {{ tool.category|lower }}">{{ ui.icon(tool.icon) }}</span><span class="tool-badge">{{ tool.badge }}</span></div><h3>{{ tool.name }}</h3><p>{{ tool.description }}</p><div class="tool-card-bottom"><code>{{ tool.command }}</code><button class="icon-button copy-button" data-copy="{{ tool.command }}" aria-label="Copy command for {{ tool.name }}">{{ ui.icon('copy') }}</button></div></article>{% endfor %}</div><p class="empty-inline" id="no-tools" hidden>No tools match. Try another search or category.</p>
+        </section>
+        <footer class="page-footer"><span>{{ ui.icon('check') }} Everything stays on this Mac.</span><span>Folder totals can differ from APFS volume usage.</span></footer>
+    </main>
+</div>
+<dialog id="refresh-dialog" aria-labelledby="refresh-title"><div class="dialog-heading"><span class="tool-icon storage">{{ ui.icon('terminal') }}</span><button class="icon-button" id="refresh-close" aria-label="Close refresh instructions">×</button></div><h2 id="refresh-title">Refresh your storage report</h2><p>Run this command in Terminal from the project folder. The scan reads file sizes and leaves your files untouched.</p><p class="dialog-path">{{ project_dir }}</p><div class="command-box"><code>make audit-mac</code><button class="icon-button" data-copy="make audit-mac" aria-label="Copy refresh command">{{ ui.icon('copy') }}</button></div><p class="dialog-note">When it finishes, reload this page to see the updated sizes.</p><button class="button primary" id="reload-page">{{ ui.icon('refresh') }} Reload dashboard</button></dialog>
+{% endblock %}

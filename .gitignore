@@ -1,0 +1,15 @@
+/.env*
+!/.env.example
+.DS_Store
+/.cce/
+/vendor/
+/var/
+/.phpunit.cache/
+/logs/
+/tooling/logs/
+/tooling/config/*.local.json
+/tooling/cdp_copy_db.sh
+**/__pycache__/
+*.py[cod]
+.idea/
+.vscode/
