@@ -214,6 +214,9 @@ runtime data without deletion. No rollback was run on the real checkout.
   No original file is missing and no original file mode changed.
 - Initial staged source review: 74 files, zero private/runtime/credential paths,
   and `git diff --cached --check` returned 0. No remote upload was performed.
+  Symfony's generated `config/reference.php` was subsequently removed from
+  tracking and ignored; the local generated file is retained. `bin/console`
+  is executable. Final tracked source count: 73 files.
 - Owned PHP preview PIDs were 71279 (PHP 8.5) and 79648 (PHP 8.3), both stopped
   with targeted TERM signals after their browser checks. They are diagnostic
   processes only; no Valet or unrelated session was stopped.

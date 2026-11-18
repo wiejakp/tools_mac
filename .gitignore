@@ -4,6 +4,7 @@
 /.cce/
 /vendor/
 /var/
+/config/reference.php
 /.phpunit.cache/
 /logs/
 /tooling/logs/
